@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPv4 Übungstest</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; color: #1a1a1a; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; }
+
+  header { padding: 28px 40px 20px; border-bottom: 2px solid #1a1a1a; display: flex; justify-content: space-between; align-items: flex-end; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header p { font-size: 12px; color: #666; margin-top: 3px; }
+  #score-display { font-size: 13px; font-weight: 600; color: #555; text-align: right; }
+
+  .toolbar { display: flex; gap: 10px; padding: 14px 40px; border-bottom: 1px solid #e0e0e0; align-items: center; }
+  .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 5px; cursor: pointer; border: 1px solid #ccc; background: #fff; color: #333; transition: background 0.15s; }
+  .btn:hover { background: #f2f2f2; }
+  .btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .btn.primary:hover { background: #333; }
+  .btn.reset { border-color: #d0d0d0; color: #888; }
+  .progress-text { font-size: 12px; color: #888; margin-left: auto; }
+
+  .content { padding: 28px 40px; max-width: 880px; }
+
+  .section-title { font-size: 11px; font-weight: 600; color: #888; letter-spacing: 0.08em; text-transform: uppercase; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e8e8e8; }
+
+  /* QUESTION CARD */
+  .q-card { border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 14px; overflow: hidden; transition: border-color 0.2s; }
+  .q-card.correct-card { border-color: #86d9ab; }
+  .q-card.wrong-card   { border-color: #f5a3a3; }
+
+  .q-header { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: #f7f7f7; border-bottom: 1px solid #e0e0e0; }
+  .q-num { font-size: 11px; font-weight: 600; color: #555; background: #e8e8e8; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; letter-spacing: 0.05em; margin-top: 1px; }
+  .q-title { font-size: 13.5px; font-weight: 500; flex: 1; }
+  .q-type-tag { font-size: 10px; color: #999; flex-shrink: 0; margin-top: 3px; }
+
+  .q-body { padding: 14px 16px; }
+
+  .q-instruction { font-size: 12px; color: #666; margin-bottom: 10px; font-style: italic; }
+
+  /* CHECKBOX / RADIO OPTIONS */
+  .option-label {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 7px 10px; border-radius: 4px; cursor: pointer;
+    margin-bottom: 4px; border: 1px solid transparent;
+    transition: background 0.12s;
+    user-select: none;
+  }
+  .option-label:hover { background: #f5f5f5; }
+  .option-label input { margin-top: 2px; flex-shrink: 0; accent-color: #1a1a1a; }
+  .option-text { flex: 1; font-size: 13px; }
+  .option-key { font-weight: 600; color: #555; margin-right: 4px; }
+
+  .option-label.opt-correct { background: #f0faf4; border-color: #86d9ab; }
+  .option-label.opt-wrong   { background: #fdf2f2; border-color: #f5a3a3; }
+  .option-label.opt-missed  { background: #fff8e6; border-color: #f5c842; }
+
+  /* TEXT INPUT */
+  .text-input-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .text-input-wrap label { font-size: 13px; color: #444; }
+  .text-answer {
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px;
+    width: 220px; color: #1a1a1a;
+    transition: border-color 0.15s;
+  }
+  .text-answer:focus { outline: none; border-color: #888; }
+  .text-answer.inp-correct { border-color: #86d9ab; background: #f0faf4; }
+  .text-answer.inp-wrong   { border-color: #f5a3a3; background: #fdf2f2; }
+
+  /* MULTI-PART TABLE QUESTION */
+  .multi-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .multi-table th { padding: 7px 10px; background: #f2f2f2; font-weight: 600; font-size: 12px; color: #444; border: 1px solid #ddd; text-align: left; }
+  .multi-table td { padding: 7px 10px; border: 1px solid #ddd; vertical-align: middle; }
+  .multi-table td.q-label { color: #555; font-size: 12px; width: 240px; }
+  .multi-table .mp-input {
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px;
+    width: 100%; color: #1a1a1a;
+  }
+  .multi-table .mp-input:focus { outline: none; border-color: #888; }
+  .multi-table .mp-input.inp-correct { border-color: #86d9ab; background: #f0faf4; }
+  .multi-table .mp-input.inp-wrong   { border-color: #f5a3a3; background: #fdf2f2; }
+  .multi-table td.fixed-val { color: #555; font-style: italic; }
+
+  /* FEEDBACK */
+  .feedback { font-size: 12px; margin-top: 10px; padding: 8px 10px; border-radius: 4px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.fb-correct { background: #f0faf4; color: #1a7a3e; border-left: 3px solid #86d9ab; }
+  .feedback.fb-wrong   { background: #fdf2f2; color: #7a1a1a; border-left: 3px solid #f5a3a3; }
+  .feedback strong { font-weight: 600; }
+
+  /* RESULT BANNER */
+  #result-banner { display: none; margin: 0 40px 20px; padding: 18px 22px; border-radius: 6px; border: 1px solid #e0e0e0; background: #fafafa; }
+  #result-banner h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  #result-banner p { font-size: 13px; color: #555; }
+  #result-banner .score-big { font-size: 32px; font-weight: 700; color: #1a1a1a; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>IPv4 Übungstest</h1>
+    <p>35 Fragen · SE-C-51 · LF3</p>
+  </div>
+  <div id="score-display">Noch nicht ausgewertet</div>
+</header>
+
+<div class="toolbar">
+  <button class="btn primary" onclick="auswerten()">Auswerten</button>
+  <button class="btn reset" onclick="resetTest()">Zurücksetzen</button>
+  <span class="progress-text" id="progress-text">0 / 35 beantwortet</span>
+</div>
+
+<div id="result-banner">
+  <h2>Auswertung</h2>
+  <div class="score-big" id="score-big">–</div>
+  <p id="score-detail"></p>
+</div>
+
+<div class="content">
+
+<!-- ======================== ABSCHNITT 1: GRUNDLAGEN ======================== -->
+<div class="section-title">Grundlagen IPv4</div>
+
+<!-- F01 -->
+<div class="q-card" id="card-1">
+  <div class="q-header">
+    <span class="q-num">F01</span>
+    <span class="q-title">Wie viele Bits hat eine IPv4-Adresse?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q1" value="16"> <span class="option-text"><span class="option-key">a)</span>16</span></label>
+    <label class="option-label"><input type="radio" name="q1" value="32"> <span class="option-text"><span class="option-key">b)</span>32</span></label>
+    <label class="option-label"><input type="radio" name="q1" value="64"> <span class="option-text"><span class="option-key">c)</span>64</span></label>
+    <label class="option-label"><input type="radio" name="q1" value="128"> <span class="option-text"><span class="option-key">d)</span>128</span></label>
+    <div class="feedback" id="fb-1"></div>
+  </div>
+</div>
+
+<!-- F02 -->
+<div class="q-card" id="card-2">
+  <div class="q-header">
+    <span class="q-num">F02</span>
+    <span class="q-title">Wie viele IPv4-Adressen gibt es theoretisch insgesamt?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q2" value="a"> <span class="option-text"><span class="option-key">a)</span>4.294.967.296</span></label>
+    <label class="option-label"><input type="radio" name="q2" value="b"> <span class="option-text"><span class="option-key">b)</span>2.147.483.648</span></label>
+    <label class="option-label"><input type="radio" name="q2" value="c"> <span class="option-text"><span class="option-key">c)</span>65.536</span></label>
+    <label class="option-label"><input type="radio" name="q2" value="d"> <span class="option-text"><span class="option-key">d)</span>8.589.934.592</span></label>
+    <div class="feedback" id="fb-2"></div>
+  </div>
+</div>
+
+<!-- F03 -->
+<div class="q-card" id="card-3">
+  <div class="q-header">
+    <span class="q-num">F03</span>
+    <span class="q-title">Aus wie vielen Oktetten besteht eine IPv4-Adresse?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q3" value="a"> <span class="option-text"><span class="option-key">a)</span>2</span></label>
+    <label class="option-label"><input type="radio" name="q3" value="b"> <span class="option-text"><span class="option-key">b)</span>4</span></label>
+    <label class="option-label"><input type="radio" name="q3" value="c"> <span class="option-text"><span class="option-key">c)</span>6</span></label>
+    <label class="option-label"><input type="radio" name="q3" value="d"> <span class="option-text"><span class="option-key">d)</span>8</span></label>
+    <div class="feedback" id="fb-3"></div>
+  </div>
+</div>
+
+<!-- F04 -->
+<div class="q-card" id="card-4">
+  <div class="q-header">
+    <span class="q-num">F04</span>
+    <span class="q-title">Welche der folgenden Aussagen über IPv4 sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q4" value="a"> <span class="option-text"><span class="option-key">a)</span>Jedes Oktett kann Werte von 0 bis 255 annehmen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q4" value="b"> <span class="option-text"><span class="option-key">b)</span>IPv4-Adressen bestehen immer aus einem Netz- und einem Hostteil.</span></label>
+    <label class="option-label"><input type="checkbox" name="q4" value="c"> <span class="option-text"><span class="option-key">c)</span>IPv4 verwendet 64 Bit für Adressen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q4" value="d"> <span class="option-text"><span class="option-key">d)</span>Öffentliche IPv4-Adressen sind im Internet weltweit eindeutig.</span></label>
+    <label class="option-label"><input type="checkbox" name="q4" value="e"> <span class="option-text"><span class="option-key">e)</span>IPv4 unterstützt insgesamt 65.536 mögliche Adressen.</span></label>
+    <div class="feedback" id="fb-4"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 2: SUBNETZMASKEN ======================== -->
+<div class="section-title">Subnetzmasken &amp; CIDR</div>
+
+<!-- F05 -->
+<div class="q-card" id="card-5">
+  <div class="q-header">
+    <span class="q-num">F05</span>
+    <span class="q-title">Wandeln Sie die VLSM-Netzmaske /24 in die Dezimal-Punkt-Schreibweise um.</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Antwort ohne Leerzeichen und ohne führende Nullen an:</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q5" placeholder="z.B. 255.255.255.0">
+    </div>
+    <div class="feedback" id="fb-5"></div>
+  </div>
+</div>
+
+<!-- F06 -->
+<div class="q-card" id="card-6">
+  <div class="q-header">
+    <span class="q-num">F06</span>
+    <span class="q-title">Wandeln Sie die VLSM-Netzmaske /16 in die Dezimal-Punkt-Schreibweise um.</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Antwort ohne Leerzeichen und ohne führende Nullen an:</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q6" placeholder="z.B. 255.255.0.0">
+    </div>
+    <div class="feedback" id="fb-6"></div>
+  </div>
+</div>
+
+<!-- F07 -->
+<div class="q-card" id="card-7">
+  <div class="q-header">
+    <span class="q-num">F07</span>
+    <span class="q-title">Wandeln Sie die VLSM-Netzmaske /20 in die Dezimal-Punkt-Schreibweise um.</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Antwort ohne Leerzeichen und ohne führende Nullen an:</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q7" placeholder="">
+    </div>
+    <div class="feedback" id="fb-7"></div>
+  </div>
+</div>
+
+<!-- F08 -->
+<div class="q-card" id="card-8">
+  <div class="q-header">
+    <span class="q-num">F08</span>
+    <span class="q-title">Welche Netzmaske in Dezimalschreibweise gehört zu einem /27-Netz?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q8" value="a"> <span class="option-text"><span class="option-key">a)</span>255.255.255.0</span></label>
+    <label class="option-label"><input type="radio" name="q8" value="b"> <span class="option-text"><span class="option-key">b)</span>255.255.255.192</span></label>
+    <label class="option-label"><input type="radio" name="q8" value="c"> <span class="option-text"><span class="option-key">c)</span>255.255.255.224</span></label>
+    <label class="option-label"><input type="radio" name="q8" value="d"> <span class="option-text"><span class="option-key">d)</span>255.255.255.240</span></label>
+    <div class="feedback" id="fb-8"></div>
+  </div>
+</div>
+
+<!-- F09 -->
+<div class="q-card" id="card-9">
+  <div class="q-header">
+    <span class="q-num">F09</span>
+    <span class="q-title">Welche Aussagen über Subnetzmasken sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q9" value="a"> <span class="option-text"><span class="option-key">a)</span>255.255.255.0 entspricht /24.</span></label>
+    <label class="option-label"><input type="checkbox" name="q9" value="b"> <span class="option-text"><span class="option-key">b)</span>Eine größere Subnetzmaske (mehr 1-Bits) bedeutet mehr Hostadressen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q9" value="c"> <span class="option-text"><span class="option-key">c)</span>Subnetzmasken bestimmen die Trennung zwischen Netz- und Hostadressbereich.</span></label>
+    <label class="option-label"><input type="checkbox" name="q9" value="d"> <span class="option-text"><span class="option-key">d)</span>255.255.0.0 entspricht /16.</span></label>
+    <label class="option-label"><input type="checkbox" name="q9" value="e"> <span class="option-text"><span class="option-key">e)</span>255.128.0.0 entspricht /10.</span></label>
+    <div class="feedback" id="fb-9"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 3: HOSTADRESSEN ======================== -->
+<div class="section-title">Hostadressenberechnung</div>
+
+<!-- F10 -->
+<div class="q-card" id="card-10">
+  <div class="q-header">
+    <span class="q-num">F10</span>
+    <span class="q-title">Wie viele Hostadressen stehen in einem /24-Netz zur Verfügung?</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie nur die Anzahl an, keine Leerzeichen, keine Buchstaben, keine führenden Nullen:</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q10" placeholder="">
+    </div>
+    <div class="feedback" id="fb-10"></div>
+  </div>
+</div>
+
+<!-- F11 -->
+<div class="q-card" id="card-11">
+  <div class="q-header">
+    <span class="q-num">F11</span>
+    <span class="q-title">Wie viele Hostadressen stehen in einem /29-Netz zur Verfügung?</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie nur die Anzahl an, keine Leerzeichen, keine Buchstaben, keine führenden Nullen:</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q11" placeholder="">
+    </div>
+    <div class="feedback" id="fb-11"></div>
+  </div>
+</div>
+
+<!-- F12 -->
+<div class="q-card" id="card-12">
+  <div class="q-header">
+    <span class="q-num">F12</span>
+    <span class="q-title">Wie viele Adressen (gesamt) stehen in einem Netzwerk mit der Subnetzmaske 255.255.255.240 zur Verfügung?</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie nur die Gesamtanzahl aller Adressen an (inkl. Netz- und Broadcastadresse):</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q12" placeholder="">
+    </div>
+    <div class="feedback" id="fb-12"></div>
+  </div>
+</div>
+
+<!-- F13 -->
+<div class="q-card" id="card-13">
+  <div class="q-header">
+    <span class="q-num">F13</span>
+    <span class="q-title">Wie viele Hostadressen stehen in einem /10-Netz zur Verfügung?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q13" value="a"> <span class="option-text"><span class="option-key">a)</span>4.194.302</span></label>
+    <label class="option-label"><input type="radio" name="q13" value="b"> <span class="option-text"><span class="option-key">b)</span>1.048.574</span></label>
+    <label class="option-label"><input type="radio" name="q13" value="c"> <span class="option-text"><span class="option-key">c)</span>2.097.150</span></label>
+    <label class="option-label"><input type="radio" name="q13" value="d"> <span class="option-text"><span class="option-key">d)</span>8.388.606</span></label>
+    <div class="feedback" id="fb-13"></div>
+  </div>
+</div>
+
+<!-- F14 -->
+<div class="q-card" id="card-14">
+  <div class="q-header">
+    <span class="q-num">F14</span>
+    <span class="q-title">Welche der folgenden Rechenformeln ist korrekt für die Anzahl nutzbarer Hostadressen in einem /27-Netz?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort (^ = hoch):</div>
+    <label class="option-label"><input type="radio" name="q14" value="a"> <span class="option-text"><span class="option-key">a)</span>2^27-2</span></label>
+    <label class="option-label"><input type="radio" name="q14" value="b"> <span class="option-text"><span class="option-key">b)</span>2^5-2</span></label>
+    <label class="option-label"><input type="radio" name="q14" value="c"> <span class="option-text"><span class="option-key">c)</span>2^27</span></label>
+    <label class="option-label"><input type="radio" name="q14" value="d"> <span class="option-text"><span class="option-key">d)</span>2^5</span></label>
+    <div class="feedback" id="fb-14"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 4: ADRESSTYPEN ======================== -->
+<div class="section-title">Netz-, Host- und Broadcastadressen</div>
+
+<!-- F15 -->
+<div class="q-card" id="card-15">
+  <div class="q-header">
+    <span class="q-num">F15</span>
+    <span class="q-title">Welche der folgenden Adressen ist eine Netzadresse?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q15" value="a"> <span class="option-text"><span class="option-key">a)</span>192.168.10.0/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q15" value="b"> <span class="option-text"><span class="option-key">b)</span>192.168.10.1/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q15" value="c"> <span class="option-text"><span class="option-key">c)</span>10.0.0.0/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q15" value="d"> <span class="option-text"><span class="option-key">d)</span>10.0.0.1/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q15" value="e"> <span class="option-text"><span class="option-key">e)</span>172.16.0.0/12</span></label>
+    <div class="feedback" id="fb-15"></div>
+  </div>
+</div>
+
+<!-- F16 -->
+<div class="q-card" id="card-16">
+  <div class="q-header">
+    <span class="q-num">F16</span>
+    <span class="q-title">Welche der folgenden Adressen ist eine Broadcastadresse?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q16" value="a"> <span class="option-text"><span class="option-key">a)</span>192.168.1.255/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q16" value="b"> <span class="option-text"><span class="option-key">b)</span>10.255.255.255/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q16" value="c"> <span class="option-text"><span class="option-key">c)</span>172.16.0.1/12</span></label>
+    <label class="option-label"><input type="checkbox" name="q16" value="d"> <span class="option-text"><span class="option-key">d)</span>192.168.1.3/30</span></label>
+    <label class="option-label"><input type="checkbox" name="q16" value="e"> <span class="option-text"><span class="option-key">e)</span>10.11.12.255/16</span></label>
+    <div class="feedback" id="fb-16"></div>
+  </div>
+</div>
+
+<!-- F17 -->
+<div class="q-card" id="card-17">
+  <div class="q-header">
+    <span class="q-num">F17</span>
+    <span class="q-title">Welche der folgenden Adressen ist eine gültige Hostadresse?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q17" value="a"> <span class="option-text"><span class="option-key">a)</span>192.168.1.0/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q17" value="b"> <span class="option-text"><span class="option-key">b)</span>192.168.1.100/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q17" value="c"> <span class="option-text"><span class="option-key">c)</span>10.0.0.254/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q17" value="d"> <span class="option-text"><span class="option-key">d)</span>192.168.1.255/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q17" value="e"> <span class="option-text"><span class="option-key">e)</span>172.16.5.10/12</span></label>
+    <div class="feedback" id="fb-17"></div>
+  </div>
+</div>
+
+<!-- F18 -->
+<div class="q-card" id="card-18">
+  <div class="q-header">
+    <span class="q-num">F18</span>
+    <span class="q-title">Welche Eigenschaften besitzt eine Netzadresse?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q18" value="a"> <span class="option-text"><span class="option-key">a)</span>Alle Hostbits sind auf 0 gesetzt.</span></label>
+    <label class="option-label"><input type="checkbox" name="q18" value="b"> <span class="option-text"><span class="option-key">b)</span>Sie ist die erste Adresse eines Subnetzes.</span></label>
+    <label class="option-label"><input type="checkbox" name="q18" value="c"> <span class="option-text"><span class="option-key">c)</span>Sie kann einem Host zugewiesen werden.</span></label>
+    <label class="option-label"><input type="checkbox" name="q18" value="d"> <span class="option-text"><span class="option-key">d)</span>Sie beschreibt den Netzwerkbereich eines IP-Netzes.</span></label>
+    <label class="option-label"><input type="checkbox" name="q18" value="e"> <span class="option-text"><span class="option-key">e)</span>Sie ist identisch mit der Broadcastadresse.</span></label>
+    <div class="feedback" id="fb-18"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 5: PRIVATE / ÖFFENTLICHE ADRESSEN ======================== -->
+<div class="section-title">Private &amp; Öffentliche Adressbereiche</div>
+
+<!-- F19 -->
+<div class="q-card" id="card-19">
+  <div class="q-header">
+    <span class="q-num">F19</span>
+    <span class="q-title">Welche der folgenden Bereiche sind private IPv4-Adressbereiche (RFC 1918)?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q19" value="a"> <span class="option-text"><span class="option-key">a)</span>10.0.0.0/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q19" value="b"> <span class="option-text"><span class="option-key">b)</span>172.16.0.0/12</span></label>
+    <label class="option-label"><input type="checkbox" name="q19" value="c"> <span class="option-text"><span class="option-key">c)</span>192.168.0.0/16</span></label>
+    <label class="option-label"><input type="checkbox" name="q19" value="d"> <span class="option-text"><span class="option-key">d)</span>172.32.0.0/12</span></label>
+    <label class="option-label"><input type="checkbox" name="q19" value="e"> <span class="option-text"><span class="option-key">e)</span>11.0.0.0/8</span></label>
+    <div class="feedback" id="fb-19"></div>
+  </div>
+</div>
+
+<!-- F20 -->
+<div class="q-card" id="card-20">
+  <div class="q-header">
+    <span class="q-num">F20</span>
+    <span class="q-title">Ordnen Sie die IP-Adressen dem richtigen Bereich zu. Welche sind öffentlich?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie alle öffentlichen Adressen:</div>
+    <label class="option-label"><input type="checkbox" name="q20" value="a"> <span class="option-text"><span class="option-key">a)</span>8.8.8.8</span></label>
+    <label class="option-label"><input type="checkbox" name="q20" value="b"> <span class="option-text"><span class="option-key">b)</span>192.168.1.1</span></label>
+    <label class="option-label"><input type="checkbox" name="q20" value="c"> <span class="option-text"><span class="option-key">c)</span>1.1.1.1</span></label>
+    <label class="option-label"><input type="checkbox" name="q20" value="d"> <span class="option-text"><span class="option-key">d)</span>10.0.0.1</span></label>
+    <label class="option-label"><input type="checkbox" name="q20" value="e"> <span class="option-text"><span class="option-key">e)</span>203.0.113.5</span></label>
+    <div class="feedback" id="fb-20"></div>
+  </div>
+</div>
+
+<!-- F21 -->
+<div class="q-card" id="card-21">
+  <div class="q-header">
+    <span class="q-num">F21</span>
+    <span class="q-title">Ordnen Sie die IP-Adresse 172.20.50.4 /20 dem richtigen Bereich zu.</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q21" value="a"> <span class="option-text"><span class="option-key">a)</span>Öffentliche Adresse</span></label>
+    <label class="option-label"><input type="radio" name="q21" value="b"> <span class="option-text"><span class="option-key">b)</span>Private Adresse</span></label>
+    <div class="feedback" id="fb-21"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 6: APIPA & SONDERADRESSEN ======================== -->
+<div class="section-title">APIPA &amp; Sonderadressen</div>
+
+<!-- F22 -->
+<div class="q-card" id="card-22">
+  <div class="q-header">
+    <span class="q-num">F22</span>
+    <span class="q-title">Welche der folgenden Aussagen zur APIPA-Adresse sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q22" value="a"> <span class="option-text"><span class="option-key">a)</span>APIPA-Adressen werden automatisch zugewiesen, wenn ein DHCP-Server nicht erreichbar ist.</span></label>
+    <label class="option-label"><input type="checkbox" name="q22" value="b"> <span class="option-text"><span class="option-key">b)</span>Der Adressbereich liegt zwischen 169.254.0.0 und 169.254.255.255.</span></label>
+    <label class="option-label"><input type="checkbox" name="q22" value="c"> <span class="option-text"><span class="option-key">c)</span>APIPA-Adressen sind im Internet routbar.</span></label>
+    <label class="option-label"><input type="checkbox" name="q22" value="d"> <span class="option-text"><span class="option-key">d)</span>Geräte mit APIPA-Adressen können nur im eigenen lokalen Netzwerk kommunizieren.</span></label>
+    <label class="option-label"><input type="checkbox" name="q22" value="e"> <span class="option-text"><span class="option-key">e)</span>APIPA wird manuell von Administratoren konfiguriert.</span></label>
+    <div class="feedback" id="fb-22"></div>
+  </div>
+</div>
+
+<!-- F23 -->
+<div class="q-card" id="card-23">
+  <div class="q-header">
+    <span class="q-num">F23</span>
+    <span class="q-title">Welche IPv4-Adressen haben eine Sonderfunktion?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q23" value="a"> <span class="option-text"><span class="option-key">a)</span>127.0.0.1 (Loopback)</span></label>
+    <label class="option-label"><input type="checkbox" name="q23" value="b"> <span class="option-text"><span class="option-key">b)</span>192.168.1.100</span></label>
+    <label class="option-label"><input type="checkbox" name="q23" value="c"> <span class="option-text"><span class="option-key">c)</span>255.255.255.255 (Limited Broadcast)</span></label>
+    <label class="option-label"><input type="checkbox" name="q23" value="d"> <span class="option-text"><span class="option-key">d)</span>0.0.0.0</span></label>
+    <label class="option-label"><input type="checkbox" name="q23" value="e"> <span class="option-text"><span class="option-key">e)</span>10.10.10.1</span></label>
+    <div class="feedback" id="fb-23"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 7: UNICAST / BROADCAST / MULTICAST ======================== -->
+<div class="section-title">Unicast, Broadcast &amp; Multicast</div>
+
+<!-- F24 -->
+<div class="q-card" id="card-24">
+  <div class="q-header">
+    <span class="q-num">F24</span>
+    <span class="q-title">Welche Aussagen beschreiben einen Broadcast korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q24" value="a"> <span class="option-text"><span class="option-key">a)</span>Eine Nachricht wird an alle Geräte im Netzwerk gesendet.</span></label>
+    <label class="option-label"><input type="checkbox" name="q24" value="b"> <span class="option-text"><span class="option-key">b)</span>Broadcast-Pakete werden von Routern in andere Netze weitergeleitet.</span></label>
+    <label class="option-label"><input type="checkbox" name="q24" value="c"> <span class="option-text"><span class="option-key">c)</span>Die Broadcastadresse hat alle Hostbits auf 1 gesetzt.</span></label>
+    <label class="option-label"><input type="checkbox" name="q24" value="d"> <span class="option-text"><span class="option-key">d)</span>Ein Fernsehturm, der eine Sendung ausstrahlt, ist eine Analogie für Broadcast.</span></label>
+    <label class="option-label"><input type="checkbox" name="q24" value="e"> <span class="option-text"><span class="option-key">e)</span>Broadcast sendet Daten an genau einen Empfänger.</span></label>
+    <div class="feedback" id="fb-24"></div>
+  </div>
+</div>
+
+<!-- F25 -->
+<div class="q-card" id="card-25">
+  <div class="q-header">
+    <span class="q-num">F25</span>
+    <span class="q-title">Welche Aussagen über Unicast, Broadcast und Multicast sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q25" value="a"> <span class="option-text"><span class="option-key">a)</span>Unicast sendet Daten an genau einen Empfänger.</span></label>
+    <label class="option-label"><input type="checkbox" name="q25" value="b"> <span class="option-text"><span class="option-key">b)</span>Multicast ist eine Kommunikation an eine definierte Hostgruppe.</span></label>
+    <label class="option-label"><input type="checkbox" name="q25" value="c"> <span class="option-text"><span class="option-key">c)</span>Broadcast funktioniert problemlos über Routergrenzen hinweg.</span></label>
+    <label class="option-label"><input type="checkbox" name="q25" value="d"> <span class="option-text"><span class="option-key">d)</span>Unicast kann nur in privaten Netzwerken genutzt werden.</span></label>
+    <label class="option-label"><input type="checkbox" name="q25" value="e"> <span class="option-text"><span class="option-key">e)</span>Ein Telefonanruf ist eine Analogie für Unicast.</span></label>
+    <div class="feedback" id="fb-25"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 8: GATEWAY ======================== -->
+<div class="section-title">Standardgateway</div>
+
+<!-- F26 -->
+<div class="q-card" id="card-26">
+  <div class="q-header">
+    <span class="q-num">F26</span>
+    <span class="q-title">Welche Aussagen über Standardgateways sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q26" value="a"> <span class="option-text"><span class="option-key">a)</span>Ein Gateway muss im selben Subnetz wie der Host liegen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q26" value="b"> <span class="option-text"><span class="option-key">b)</span>Ohne Gateway kann kein Datenpaket das lokale Netz verlassen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q26" value="c"> <span class="option-text"><span class="option-key">c)</span>Ein Gateway ist immer die Broadcastadresse des Netzes.</span></label>
+    <label class="option-label"><input type="checkbox" name="q26" value="d"> <span class="option-text"><span class="option-key">d)</span>Ein Gateway verbindet ein lokales Netz mit anderen Netzen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q26" value="e"> <span class="option-text"><span class="option-key">e)</span>Ein Gateway ersetzt DHCP im Netzwerk.</span></label>
+    <div class="feedback" id="fb-26"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 9: KOMPLEXAUFGABEN ======================== -->
+<div class="section-title">Komplexaufgaben: Netzanalyse</div>
+
+<!-- F27 -->
+<div class="q-card" id="card-27">
+  <div class="q-header">
+    <span class="q-num">F27</span>
+    <span class="q-title">Gegeben ist die IP-Adresse 192.168.5.0/24. Welche Aussagen sind richtig?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q27" value="a"> <span class="option-text"><span class="option-key">a)</span>Die Netzadresse lautet 192.168.5.0.</span></label>
+    <label class="option-label"><input type="checkbox" name="q27" value="b"> <span class="option-text"><span class="option-key">b)</span>Die Broadcastadresse lautet 192.168.5.255.</span></label>
+    <label class="option-label"><input type="checkbox" name="q27" value="c"> <span class="option-text"><span class="option-key">c)</span>Es stehen 256 nutzbare Hostadressen zur Verfügung.</span></label>
+    <label class="option-label"><input type="checkbox" name="q27" value="d"> <span class="option-text"><span class="option-key">d)</span>Das Netz gehört zum privaten IPv4-Bereich.</span></label>
+    <label class="option-label"><input type="checkbox" name="q27" value="e"> <span class="option-text"><span class="option-key">e)</span>Der Hostbereich reicht von 192.168.5.1 bis 192.168.5.254.</span></label>
+    <div class="feedback" id="fb-27"></div>
+  </div>
+</div>
+
+<!-- F28 -->
+<div class="q-card" id="card-28">
+  <div class="q-header">
+    <span class="q-num">F28</span>
+    <span class="q-title">Gegeben ist die IP-Adresse 10.0.0.0/8. Beantworten Sie die folgenden Fragen:</span>
+    <span class="q-type-tag">Mehrteilig</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Antworten ohne führende Nullen, ohne Leerzeichen ein:</div>
+    <table class="multi-table">
+      <tr><th>Frage</th><th>Ihre Antwort</th></tr>
+      <tr><td class="q-label">1. Öffentlich oder privat?</td><td><input class="mp-input" id="q28_1" data-answer="privat" placeholder="privat / öffentlich"></td></tr>
+      <tr><td class="q-label">2. Subnetzmaske in Dezimal?</td><td><input class="mp-input" id="q28_2" data-answer="255.0.0.0" placeholder=""></td></tr>
+      <tr><td class="q-label">3. Anzahl Hostbits?</td><td><input class="mp-input" id="q28_3" data-answer="24" placeholder=""></td></tr>
+      <tr><td class="q-label">4. Broadcastadresse?</td><td><input class="mp-input" id="q28_4" data-answer="10.255.255.255" placeholder=""></td></tr>
+    </table>
+    <div class="feedback" id="fb-28"></div>
+  </div>
+</div>
+
+<!-- F29 -->
+<div class="q-card" id="card-29">
+  <div class="q-header">
+    <span class="q-num">F29</span>
+    <span class="q-title">Gegeben ist die IP-Adresse 172.16.45.200 /20. Beantworten Sie die folgenden Fragen:</span>
+    <span class="q-type-tag">Mehrteilig</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Antworten ohne führende Nullen, ohne Leerzeichen ein:</div>
+    <table class="multi-table">
+      <tr><th>Frage</th><th>Ihre Antwort</th></tr>
+      <tr><td class="q-label">1. Öffentlich oder privat?</td><td><input class="mp-input" id="q29_1" data-answer="privat" placeholder="privat / öffentlich"></td></tr>
+      <tr><td class="q-label">2. Netzklasse?</td><td><input class="mp-input" id="q29_2" data-answer="B" placeholder="A / B / C"></td></tr>
+      <tr><td class="q-label">3. Subnetzmaske /20 in Dezimal?</td><td><input class="mp-input" id="q29_3" data-answer="255.255.240.0" placeholder=""></td></tr>
+      <tr><td class="q-label">4. Netzadresse?</td><td><input class="mp-input" id="q29_4" data-answer="172.16.32.0" placeholder=""></td></tr>
+      <tr><td class="q-label">5. Broadcastadresse?</td><td><input class="mp-input" id="q29_5" data-answer="172.16.47.255" placeholder=""></td></tr>
+    </table>
+    <div class="feedback" id="fb-29"></div>
+  </div>
+</div>
+
+<!-- F30 -->
+<div class="q-card" id="card-30">
+  <div class="q-header">
+    <span class="q-num">F30</span>
+    <span class="q-title">Gegeben ist die IP-Adresse 192.168.100.130 mit Subnetzmaske 255.255.255.192. Welche Aussagen sind richtig?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q30" value="a"> <span class="option-text"><span class="option-key">a)</span>Die Subnetzmaske entspricht /26.</span></label>
+    <label class="option-label"><input type="checkbox" name="q30" value="b"> <span class="option-text"><span class="option-key">b)</span>Die Netzadresse lautet 192.168.100.128.</span></label>
+    <label class="option-label"><input type="checkbox" name="q30" value="c"> <span class="option-text"><span class="option-key">c)</span>Die Broadcastadresse lautet 192.168.100.191.</span></label>
+    <label class="option-label"><input type="checkbox" name="q30" value="d"> <span class="option-text"><span class="option-key">d)</span>Es stehen 62 nutzbare Hostadressen zur Verfügung.</span></label>
+    <label class="option-label"><input type="checkbox" name="q30" value="e"> <span class="option-text"><span class="option-key">e)</span>192.168.100.130 ist eine gültige Hostadresse.</span></label>
+    <div class="feedback" id="fb-30"></div>
+  </div>
+</div>
+
+<!-- F31 -->
+<div class="q-card" id="card-31">
+  <div class="q-header">
+    <span class="q-num">F31</span>
+    <span class="q-title">Welche der folgenden CIDR-Netze sind größer als ein /22-Netz?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q31" value="a"> <span class="option-text"><span class="option-key">a)</span>/8</span></label>
+    <label class="option-label"><input type="checkbox" name="q31" value="b"> <span class="option-text"><span class="option-key">b)</span>/16</span></label>
+    <label class="option-label"><input type="checkbox" name="q31" value="c"> <span class="option-text"><span class="option-key">c)</span>/20</span></label>
+    <label class="option-label"><input type="checkbox" name="q31" value="d"> <span class="option-text"><span class="option-key">d)</span>/23</span></label>
+    <label class="option-label"><input type="checkbox" name="q31" value="e"> <span class="option-text"><span class="option-key">e)</span>/30</span></label>
+    <div class="feedback" id="fb-31"></div>
+  </div>
+</div>
+
+<!-- F32 -->
+<div class="q-card" id="card-32">
+  <div class="q-header">
+    <span class="q-num">F32</span>
+    <span class="q-title">Welche der folgenden Netzpaare überlappen sich?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q32" value="a"> <span class="option-text"><span class="option-key">a)</span>10.0.0.0/8 und 10.10.0.0/16</span></label>
+    <label class="option-label"><input type="checkbox" name="q32" value="b"> <span class="option-text"><span class="option-key">b)</span>192.168.1.0/24 und 192.168.2.0/24</span></label>
+    <label class="option-label"><input type="checkbox" name="q32" value="c"> <span class="option-text"><span class="option-key">c)</span>172.16.0.0/12 und 172.20.0.0/16</span></label>
+    <label class="option-label"><input type="checkbox" name="q32" value="d"> <span class="option-text"><span class="option-key">d)</span>192.168.0.0/24 und 192.168.0.128/25</span></label>
+    <label class="option-label"><input type="checkbox" name="q32" value="e"> <span class="option-text"><span class="option-key">e)</span>10.0.0.0/8 und 11.0.0.0/8</span></label>
+    <div class="feedback" id="fb-32"></div>
+  </div>
+</div>
+
+<!-- ======================== ABSCHNITT 10: BINÄRRECHNUNG ======================== -->
+<div class="section-title">Binärrechnung &amp; Rechenoperatoren</div>
+
+<!-- F33 -->
+<div class="q-card" id="card-33">
+  <div class="q-header">
+    <span class="q-num">F33</span>
+    <span class="q-title">Welcher Rechenoperator wird verwendet, um aus IP-Adresse und Netzmaske die Netzadresse zu berechnen?</span>
+    <span class="q-type-tag">Einfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine Antwort:</div>
+    <label class="option-label"><input type="radio" name="q33" value="a"> <span class="option-text"><span class="option-key">a)</span>ODER</span></label>
+    <label class="option-label"><input type="radio" name="q33" value="b"> <span class="option-text"><span class="option-key">b)</span>UND</span></label>
+    <label class="option-label"><input type="radio" name="q33" value="c"> <span class="option-text"><span class="option-key">c)</span>Negation</span></label>
+    <label class="option-label"><input type="radio" name="q33" value="d"> <span class="option-text"><span class="option-key">d)</span>Exklusiv ODER</span></label>
+    <div class="feedback" id="fb-33"></div>
+  </div>
+</div>
+
+<!-- F34 -->
+<div class="q-card" id="card-34">
+  <div class="q-header">
+    <span class="q-num">F34</span>
+    <span class="q-title">Welche Aussagen zur binären Berechnung von Netz- und Broadcastadresse sind korrekt?</span>
+    <span class="q-type-tag">Mehrfachauswahl</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Wählen Sie eine oder mehrere Antworten:</div>
+    <label class="option-label"><input type="checkbox" name="q34" value="a"> <span class="option-text"><span class="option-key">a)</span>Netzadresse = IP UND Netzmaske</span></label>
+    <label class="option-label"><input type="checkbox" name="q34" value="b"> <span class="option-text"><span class="option-key">b)</span>Broadcastadresse = IP ODER invertierte Netzmaske</span></label>
+    <label class="option-label"><input type="checkbox" name="q34" value="c"> <span class="option-text"><span class="option-key">c)</span>Netzadresse = IP ODER Netzmaske</span></label>
+    <label class="option-label"><input type="checkbox" name="q34" value="d"> <span class="option-text"><span class="option-key">d)</span>Ein zusätzliches Hostbit verdoppelt die Anzahl möglicher Hostadressen.</span></label>
+    <label class="option-label"><input type="checkbox" name="q34" value="e"> <span class="option-text"><span class="option-key">e)</span>Broadcastadresse = IP UND Netzmaske</span></label>
+    <div class="feedback" id="fb-34"></div>
+  </div>
+</div>
+
+<!-- F35 -->
+<div class="q-card" id="card-35">
+  <div class="q-header">
+    <span class="q-num">F35</span>
+    <span class="q-title">Gegeben ist die IP-Adresse 163.73.45.32 /21. Wie lautet die Broadcastadresse?</span>
+    <span class="q-type-tag">Texteingabe</span>
+  </div>
+  <div class="q-body">
+    <div class="q-instruction">Geben Sie die Broadcastadresse in Dezimal-Punkt-Schreibweise an (ohne Leerzeichen):</div>
+    <div class="text-input-wrap">
+      <label>Antwort:</label>
+      <input type="text" class="text-answer" id="q35" placeholder="x.x.x.x">
+    </div>
+    <div class="feedback" id="fb-35"></div>
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<script>
+// ===================== KONFIGURATION =====================
+const questions = {
+  1:  { type:'radio', correct:['32'], explanation:'Eine IPv4-Adresse hat 32 Bit (4 Oktette × 8 Bit).' },
+  2:  { type:'radio', correct:['a'], explanation:'2³² = 4.294.967.296 mögliche IPv4-Adressen.' },
+  3:  { type:'radio', correct:['b'], explanation:'4 Oktette × 8 Bit = 32 Bit gesamt.' },
+  4:  { type:'checkbox', correct:['a','b','d'], explanation:'a) ✓ 0–255 pro Oktett | b) ✓ immer Netz+Hostteil | d) ✓ weltweit eindeutig. c) ✗ 32 nicht 64 Bit | e) ✗ 2³² ≈ 4,3 Mrd.' },
+  5:  { type:'text', correct:['255.255.255.0'], explanation:'24 × 1-Bits: 11111111.11111111.11111111.00000000 = 255.255.255.0' },
+  6:  { type:'text', correct:['255.255.0.0'], explanation:'16 × 1-Bits: 11111111.11111111.00000000.00000000 = 255.255.0.0' },
+  7:  { type:'text', correct:['255.255.240.0'], explanation:'20 × 1-Bits: 11111111.11111111.11110000.00000000 = 255.255.240.0' },
+  8:  { type:'radio', correct:['c'], explanation:'255.255.255.224 = /27 (27 × 1-Bits: letzte 5 Bits = 0, 224 = 11100000).' },
+  9:  { type:'checkbox', correct:['a','c','d'], explanation:'a) ✓ /24 | c) ✓ Trennung Netz/Host | d) ✓ /16. b) ✗ mehr 1-Bits = weniger Hosts. e) ✗ 255.128.0.0 = /9.' },
+  10: { type:'text', correct:['254'], explanation:'2^(32-24) - 2 = 2⁸ - 2 = 254 nutzbare Hostadressen.' },
+  11: { type:'text', correct:['6'], explanation:'2^(32-29) - 2 = 2³ - 2 = 6 nutzbare Hostadressen.' },
+  12: { type:'text', correct:['16'], explanation:'255.255.255.240 → 240 = 11110000 → 4 Hostbits → 2⁴ = 16 Adressen gesamt.' },
+  13: { type:'radio', correct:['a'], explanation:'2^(32-10) - 2 = 2²² - 2 = 4.194.302 nutzbare Hostadressen.' },
+  14: { type:'radio', correct:['b'], explanation:'Hostbits = 32 - 27 = 5. Formel: 2^5 - 2 = 30 Hostadressen.' },
+  15: { type:'checkbox', correct:['a','c','e'], explanation:'a) .0/24 = Netzadresse ✓ | c) 10.0.0.0/8 = Netzadresse ✓ | e) 172.16.0.0/12 = Netzadresse ✓. b,d = Hostadressen.' },
+  16: { type:'checkbox', correct:['a','b','d'], explanation:'a) 192.168.1.255/24 ✓ | b) 10.255.255.255/8 ✓ | d) .3/30 = Broadcast (Subnetz .0–.3) ✓. c) ist Hostadresse. e) /16 Broadcast wäre 10.11.255.255.' },
+  17: { type:'checkbox', correct:['b','c','e'], explanation:'b) .100/24 ✓ | c) 10.0.0.254/8 ✓ | e) 172.16.5.10/12 ✓. a) Netzadresse | d) Broadcastadresse.' },
+  18: { type:'checkbox', correct:['a','b','d'], explanation:'a) Alle Hostbits = 0 ✓ | b) Erste Adresse ✓ | d) Beschreibt Netzwerkbereich ✓. c) Kann NICHT zugewiesen werden | e) ≠ Broadcastadresse.' },
+  19: { type:'checkbox', correct:['a','b','c'], explanation:'RFC 1918: 10.0.0.0/8 | 172.16.0.0/12 | 192.168.0.0/16. d) 172.32 ist außerhalb von 172.16–172.31. e) 11.x ist öffentlich.' },
+  20: { type:'checkbox', correct:['a','c','e'], explanation:'8.8.8.8 (Google DNS) ✓ | 1.1.1.1 (Cloudflare DNS) ✓ | 203.0.113.5 ✓. 192.168.1.1 und 10.0.0.1 sind privat.' },
+  21: { type:'radio', correct:['b'], explanation:'172.20.x liegt in 172.16.0.0/12 (172.16–172.31) → privat.' },
+  22: { type:'checkbox', correct:['a','b','d'], explanation:'a) automatisch wenn DHCP fehlt ✓ | b) 169.254.0.0–169.254.255.255 ✓ | d) nur lokal ✓. c) nicht routbar | e) nicht manuell.' },
+  23: { type:'checkbox', correct:['a','c','d'], explanation:'127.0.0.1 = Loopback ✓ | 255.255.255.255 = Broadcast ✓ | 0.0.0.0 = unbekannte Adresse ✓. b,e sind normale Hostadressen.' },
+  24: { type:'checkbox', correct:['a','c','d'], explanation:'a) an alle Geräte ✓ | c) alle Hostbits = 1 ✓ | d) Fernsehturm-Analogie ✓. b) Router leiten Broadcasts NICHT weiter. e) Unicast, nicht Broadcast.' },
+  25: { type:'checkbox', correct:['a','b','e'], explanation:'a) Unicast = 1 Empfänger ✓ | b) Multicast = Gruppe ✓ | e) Telefonanruf = Unicast ✓. c) Broadcast wird von Routern blockiert. d) Unicast auch im Internet.' },
+  26: { type:'checkbox', correct:['a','b','d'], explanation:'a) muss im gleichen Subnetz liegen ✓ | b) ohne Gateway kein Internetzugang ✓ | d) verbindet Netze ✓. c) Gateway ≠ Broadcast | e) ersetzt DHCP nicht.' },
+  27: { type:'checkbox', correct:['a','b','d','e'], explanation:'a) Netzadresse .0 ✓ | b) Broadcast .255 ✓ | d) 192.168.x ist privat ✓ | e) Hosts .1–.254 ✓. c) 254 nutzbar, nicht 256.' },
+  28: { type:'multi', parts:{1:'privat',2:'255.0.0.0',3:'24',4:'10.255.255.255'}, explanation:'10.0.0.0/8: privat | Maske 255.0.0.0 | 24 Hostbits | Broadcast 10.255.255.255' },
+  29: { type:'multi', parts:{1:'privat',2:'B',3:'255.255.240.0',4:'172.16.32.0',5:'172.16.47.255'}, explanation:'172.16.x: privat, Klasse B. /20 → 255.255.240.0. Netz: 172.16.32.0 (Block 16: 32+16=48 → 32). Broadcast: 172.16.47.255.' },
+  30: { type:'checkbox', correct:['a','b','c','d','e'], explanation:'Alle richtig: /26=255.255.255.192 ✓ | Netz .128 ✓ | Broadcast .191 ✓ | 62 Hosts (2⁶-2) ✓ | .130 ist Hostadresse ✓.' },
+  31: { type:'checkbox', correct:['a','b','c'], explanation:'Kleinere CIDR-Zahl = größeres Netz. /8 ✓ | /16 ✓ | /20 ✓ sind größer als /22. /23 und /30 sind kleiner.' },
+  32: { type:'checkbox', correct:['a','c','d'], explanation:'a) 10.10.0.0/16 ⊂ 10.0.0.0/8 ✓ | c) 172.20.0.0/16 ⊂ 172.16.0.0/12 ✓ | d) /25 ⊂ /24 ✓. b) verschiedene /24 | e) verschiedene /8.' },
+  33: { type:'radio', correct:['b'], explanation:'Netzadresse = IP-Adresse UND Netzmaske (bitweise AND).' },
+  34: { type:'checkbox', correct:['a','b','d'], explanation:'a) Netzadresse = IP UND Maske ✓ | b) Broadcast = IP ODER invertierte Maske ✓ | d) +1 Bit = ×2 Hosts ✓. c) ODER ergibt nicht Netz | e) UND ergibt Netz, nicht Broadcast.' },
+  35: { type:'text', correct:['163.73.47.255'], explanation:'/21: Maske 255.255.248.0 | Invertiert: 0.0.7.255 | 163.73.45.32 ODER 0.0.7.255 = 163.73.(45|7).(32|255) = 163.73.47.255' },
+};
+
+// ===================== PROGRESS TRACKING =====================
+function updateProgress() {
+  let answered = 0;
+  for (let i = 1; i <= 35; i++) {
+    const q = questions[i];
+    if (q.type === 'radio') {
+      if (document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+    } else if (q.type === 'checkbox') {
+      if (document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+    } else if (q.type === 'text') {
+      if (document.getElementById(`q${i}`) && document.getElementById(`q${i}`).value.trim()) answered++;
+    } else if (q.type === 'multi') {
+      const parts = Object.keys(q.parts);
+      const filled = parts.filter(p => {
+        const el = document.getElementById(`q${i}_${p}`);
+        return el && el.value.trim();
+      });
+      if (filled.length > 0) answered++;
+    }
+  }
+  document.getElementById('progress-text').textContent = `${answered} / 35 beantwortet`;
+}
+
+document.addEventListener('change', updateProgress);
+document.addEventListener('input', updateProgress);
+
+// ===================== AUSWERTUNG =====================
+function auswerten() {
+  let total = 35, correct = 0;
+
+  for (let i = 1; i <= 35; i++) {
+    const q = questions[i];
+    const card = document.getElementById(`card-${i}`);
+    const fb = document.getElementById(`fb-${i}`);
+    let isCorrect = false;
+
+    if (q.type === 'radio') {
+      const sel = document.querySelector(`input[name="q${i}"]:checked`);
+      const val = sel ? sel.value : null;
+      isCorrect = val && q.correct.includes(val);
+
+      // Mark options
+      document.querySelectorAll(`input[name="q${i}"]`).forEach(inp => {
+        const label = inp.closest('.option-label');
+        label.classList.remove('opt-correct','opt-wrong','opt-missed');
+        if (q.correct.includes(inp.value)) {
+          label.classList.add('opt-correct');
+        } else if (inp.checked && !q.correct.includes(inp.value)) {
+          label.classList.add('opt-wrong');
+        }
+      });
+
+    } else if (q.type === 'checkbox') {
+      const checked = [...document.querySelectorAll(`input[name="q${i}"]:checked`)].map(x => x.value);
+      const correctSet = new Set(q.correct);
+      const checkedSet = new Set(checked);
+      isCorrect = q.correct.every(c => checkedSet.has(c)) && checked.every(c => correctSet.has(c));
+
+      document.querySelectorAll(`input[name="q${i}"]`).forEach(inp => {
+        const label = inp.closest('.option-label');
+        label.classList.remove('opt-correct','opt-wrong','opt-missed');
+        if (inp.checked && q.correct.includes(inp.value)) label.classList.add('opt-correct');
+        else if (inp.checked && !q.correct.includes(inp.value)) label.classList.add('opt-wrong');
+        else if (!inp.checked && q.correct.includes(inp.value)) label.classList.add('opt-missed');
+      });
+
+    } else if (q.type === 'text') {
+      const inp = document.getElementById(`q${i}`);
+      const val = inp ? inp.value.trim().toLowerCase() : '';
+      const answers = q.correct.map(a => a.toLowerCase());
+      isCorrect = answers.includes(val);
+      inp.classList.remove('inp-correct','inp-wrong');
+      inp.classList.add(isCorrect ? 'inp-correct' : 'inp-wrong');
+
+    } else if (q.type === 'multi') {
+      const parts = Object.keys(q.parts);
+      let allCorrect = true;
+      let anyFilled = false;
+      parts.forEach(p => {
+        const el = document.getElementById(`q${i}_${p}`);
+        if (!el) return;
+        const val = el.value.trim().toLowerCase();
+        const ans = q.parts[p].toLowerCase();
+        const ok = val === ans;
+        el.classList.remove('inp-correct','inp-wrong');
+        if (val) { anyFilled = true; el.classList.add(ok ? 'inp-correct' : 'inp-wrong'); }
+        else { el.classList.add('inp-wrong'); }
+        if (!ok) allCorrect = false;
+      });
+      isCorrect = allCorrect;
+    }
+
+    // Card border
+    card.classList.remove('correct-card','wrong-card');
+    card.classList.add(isCorrect ? 'correct-card' : 'wrong-card');
+
+    // Feedback
+    fb.classList.remove('show','fb-correct','fb-wrong');
+    fb.classList.add('show', isCorrect ? 'fb-correct' : 'fb-wrong');
+    fb.innerHTML = isCorrect
+      ? `<strong>✓ Richtig!</strong> ${q.explanation}`
+      : `<strong>✗ Falsch.</strong> ${q.explanation}`;
+
+    if (isCorrect) correct++;
+  }
+
+  // Summary
+  const pct = Math.round(correct / total * 100);
+  const banner = document.getElementById('result-banner');
+  banner.style.display = 'block';
+  document.getElementById('score-big').textContent = `${correct} / ${total}`;
+  document.getElementById('score-detail').textContent = `${pct}% — ${pct >= 80 ? '🟢 Sehr gut!' : pct >= 60 ? '🟡 Gut, aber noch Lücken.' : '🔴 Weiteres Üben empfohlen.'}`;
+  document.getElementById('score-display').textContent = `Ergebnis: ${correct} / ${total} (${pct}%)`;
+  banner.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===================== RESET =====================
+function resetTest() {
+  for (let i = 1; i <= 35; i++) {
+    const q = questions[i];
+    const card = document.getElementById(`card-${i}`);
+    const fb = document.getElementById(`fb-${i}`);
+    card.classList.remove('correct-card','wrong-card');
+    fb.classList.remove('show','fb-correct','fb-wrong');
+    fb.innerHTML = '';
+
+    if (q.type === 'radio') {
+      document.querySelectorAll(`input[name="q${i}"]`).forEach(inp => {
+        inp.checked = false;
+        inp.closest('.option-label').classList.remove('opt-correct','opt-wrong','opt-missed');
+      });
+    } else if (q.type === 'checkbox') {
+      document.querySelectorAll(`input[name="q${i}"]`).forEach(inp => {
+        inp.checked = false;
+        inp.closest('.option-label').classList.remove('opt-correct','opt-wrong','opt-missed');
+      });
+    } else if (q.type === 'text') {
+      const inp = document.getElementById(`q${i}`);
+      if (inp) { inp.value = ''; inp.classList.remove('inp-correct','inp-wrong'); }
+    } else if (q.type === 'multi') {
+      Object.keys(q.parts).forEach(p => {
+        const el = document.getElementById(`q${i}_${p}`);
+        if (el) { el.value = ''; el.classList.remove('inp-correct','inp-wrong'); }
+      });
+    }
+  }
+  document.getElementById('result-banner').style.display = 'none';
+  document.getElementById('score-display').textContent = 'Noch nicht ausgewertet';
+  document.getElementById('progress-text').textContent = '0 / 35 beantwortet';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
